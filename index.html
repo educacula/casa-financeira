@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111827" />
+  <title>Casa Financeira</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Casa Financeira</h1>
+      <p>Controle compartilhado da casa</p>
+    </div>
+    <div class="top-actions">
+      <button id="syncStatusBtn" class="secondary">Modo local</button>
+      <button id="installBtn" class="primary hidden">Instalar app</button>
+    </div>
+  </header>
+  <nav class="tabs">
+    <button class="tab active" data-tab="dashboard">Dashboard</button>
+    <button class="tab" data-tab="lancamentos">Lançamentos</button>
+    <button class="tab" data-tab="importacao">Importação</button>
+    <button class="tab" data-tab="parcelas">Parcelas</button>
+    <button class="tab" data-tab="configuracoes">Configurações</button>
+  </nav>
+  <main>
+    <section id="dashboard" class="tab-panel active">
+      <div class="card-grid four">
+        <article class="card metric"><span>Entradas no mês</span><strong id="metricEntradas">R$ 0,00</strong></article>
+        <article class="card metric"><span>Saídas no mês</span><strong id="metricSaidas">R$ 0,00</strong></article>
+        <article class="card metric"><span>Saldo no mês</span><strong id="metricSaldo">R$ 0,00</strong></article>
+        <article class="card metric"><span>Próx. fatura</span><strong id="metricFatura">R$ 0,00</strong></article>
+      </div>
+      <div class="card-grid two">
+        <article class="card">
+          <h2>Resumo rápido</h2>
+          <div id="resumoRapido" class="list-simple"></div>
+        </article>
+        <article class="card">
+          <h2>Metas do mês</h2>
+          <form id="goalForm" class="stack compact">
+            <label>Meta de gastos do mês<input type="number" step="0.01" min="0" id="goalExpense" placeholder="Ex: 6000" /></label>
+            <label>Meta de economia do mês<input type="number" step="0.01" min="0" id="goalSaving" placeholder="Ex: 1000" /></label>
+            <button class="primary" type="submit">Salvar metas</button>
+          </form>
+          <div id="goalSummary" class="hint mt"></div>
+        </article>
+      </div>
+      <article class="card">
+        <div class="row between center"><h2>Últimos lançamentos</h2><button id="exportCsvBtn" class="secondary">Exportar CSV</button></div>
+        <div id="recentEntries" class="table-wrap"></div>
+      </article>
+    </section>
+    <section id="lancamentos" class="tab-panel">
+      <div class="card-grid two">
+        <article class="card">
+          <h2>Novo lançamento</h2>
+          <form id="entryForm" class="stack">
+            <label>Tipo<select id="type" required><option value="despesa">Despesa</option><option value="receita">Receita</option></select></label>
+            <label>Meio de pagamento<select id="paymentMethod" required><option value="pix">Pix</option><option value="debito">Débito</option><option value="credito">Crédito</option><option value="dinheiro">Dinheiro</option></select></label>
+            <label>Responsável<select id="owner" required><option value="voce">Você</option><option value="esposa">Esposa</option><option value="casa">Casa</option></select></label>
+            <label>Conta / cartão<input id="accountName" type="text" placeholder="Ex: Nubank, Inter, Cartão Visa" required /></label>
+            <label>Categoria<select id="category" required></select></label>
+            <label>Descrição<input id="description" type="text" placeholder="Ex: Mercado, farmácia, salário" required /></label>
+            <div class="grid-2">
+              <label>Valor<input id="amount" type="number" step="0.01" min="0" required /></label>
+              <label>Data<input id="date" type="date" required /></label>
+            </div>
+            <div class="grid-2">
+              <label>Parcelas<input id="installments" type="number" min="1" value="1" /></label>
+              <label>Parcela atual<input id="installmentIndex" type="number" min="1" value="1" /></label>
+            </div>
+            <label>Observações<textarea id="notes" rows="3" placeholder="Opcional"></textarea></label>
+            <label>Comprovante / anexo<input id="attachment" type="file" accept="image/*,.pdf" /></label>
+            <button class="primary" type="submit">Salvar lançamento</button>
+          </form>
+        </article>
+        <article class="card">
+          <div class="row between center"><h2>Todos os lançamentos</h2><button id="clearFiltersBtn" class="secondary">Limpar filtros</button></div>
+          <div class="filter-grid">
+            <label>Buscar<input id="searchInput" type="text" placeholder="Descrição, conta, categoria..." /></label>
+            <label>Mês<input id="monthFilter" type="month" /></label>
+            <label>Responsável<select id="ownerFilter"><option value="">Todos</option></select></label>
+            <label>Meio<select id="methodFilter"><option value="">Todos</option></select></label>
+          </div>
+          <div id="entriesTable" class="table-wrap mt"></div>
+        </article>
+      </div>
+    </section>
+    <section id="importacao" class="tab-panel">
+      <div class="card-grid two">
+        <article class="card">
+          <h2>Importar extrato</h2>
+          <p class="hint">Aceita CSV, OFX e JSON. PDF pode ser anexado para revisão manual, mas a leitura automática de PDF depende muito do formato do banco.</p>
+          <form id="importForm" class="stack">
+            <label>Origem do arquivo<select id="importSource"><option value="cartao">Extrato de cartão / banco</option><option value="pix">Extrato Pix / conta</option><option value="manual-json">Backup JSON do sistema</option></select></label>
+            <label>Conta / cartão padrão<input id="importAccount" type="text" placeholder="Ex: Nubank Crédito, Itaú Débito" /></label>
+            <label>Responsável padrão<select id="importOwner"><option value="voce">Você</option><option value="esposa">Esposa</option><option value="casa">Casa</option></select></label>
+            <label>Selecione o arquivo<input id="importFile" type="file" accept=".csv,.ofx,.json,.pdf" required /></label>
+            <button class="primary" type="submit">Processar arquivo</button>
+          </form>
+        </article>
+        <article class="card">
+          <div class="row between center"><h2>Pendentes para revisar</h2><button id="approveAllBtn" class="secondary">Aprovar todos os válidos</button></div>
+          <div id="pendingList" class="stack mt"></div>
+        </article>
+      </div>
+      <article class="card mt-lg"><h2>Importação inicial do WhatsApp</h2><p class="hint">Esta versão está preparada para usar extratos do banco/cartão no lugar das fotos do WhatsApp, porque o resultado é muito mais confiável. As fotos podem ser anexadas manualmente nos lançamentos.</p></article>
+    </section>
+    <section id="parcelas" class="tab-panel"><article class="card"><h2>Compras parceladas em aberto</h2><div id="installmentsTable" class="table-wrap"></div></article></section>
+    <section id="configuracoes" class="tab-panel">
+      <div class="card-grid two">
+        <article class="card"><h2>Sincronização</h2><p class="hint">Sem Firebase, o sistema funciona apenas no navegador deste aparelho. Com Firebase, você e sua esposa compartilham os mesmos dados nos dois celulares.</p><ol class="hint compact-list"><li>Copie <strong>firebase-config.example.js</strong> para <strong>firebase-config.js</strong>.</li><li>Preencha com as chaves do seu projeto Firebase.</li><li>Publique no GitHub Pages.</li></ol><div id="firebaseStatus" class="notice">Firebase não configurado.</div></article>
+        <article class="card"><h2>Backup e restauração</h2><div class="stack"><button id="exportJsonBtn" class="secondary">Exportar backup JSON</button><label>Restaurar backup JSON<input id="restoreJsonInput" type="file" accept=".json" /></label></div></article>
+      </div>
+    </section>
+  </main>
+  <template id="pendingItemTemplate"><article class="pending-item"><div class="pending-content"></div><div class="pending-actions"><button class="primary approve-btn">Aprovar</button><button class="secondary edit-btn">Editar</button><button class="danger reject-btn">Ignorar</button></div></article></template>
+  <div id="toast" class="toast hidden"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
